@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zapier Agent Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 1px solid #222;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -.02em; }
+    .logo span { color: #888; font-weight: 400; }
+    .live { font-size: .8rem; color: #555; display: flex; align-items: center; gap: 7px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; display: inline-block; animation: blink 2s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── MAIN ── */
+    main { max-width: 700px; margin: 0 auto; padding: 36px 20px 60px; }
+
+    /* ── SECTION LABEL ── */
+    .label {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    /* ── WEBHOOK BOX ── */
+    .webhook-box {
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 32px;
+    }
+    .webhook-box h2 { font-size: 1rem; font-weight: 600; margin-bottom: 5px; }
+    .webhook-box p  { font-size: .82rem; color: #666; margin-bottom: 16px; line-height: 1.5; }
+
+    .url-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .url-field {
+      flex: 1; min-width: 180px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: .78rem;
+      color: #aaa;
+      word-break: break-all;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .btn-white { background: #fff; color: #000; }
+    .btn-white:hover { background: #e0e0e0; }
+    .btn-dark  { background: #111; color: #fff; border: 1px solid #333; }
+    .btn-dark:hover  { background: #1a1a1a; border-color: #555; }
+
+    .copied {
+      display: none;
+      font-size: .78rem;
+      color: #fff;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+
+    .ping { font-size: .75rem; color: #444; margin-top: 10px; }
+    .ping span { color: #666; }
+
+    /* ── STATS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      border: 1px solid #222;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat .n { font-size: 1.5rem; font-weight: 700; }
+    .stat .l { font-size: .7rem; color: #555; margin-top: 2px; }
+
+    /* ── TOOLBAR ── */
+    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .search {
+      flex: 1;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 9px 14px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: .82rem;
+      outline: none;
+    }
+    .search::placeholder { color: #444; }
+    .search:focus { border-color: #555; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      border: 1px solid #222;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left;
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #444;
+      padding: 12px 16px;
+      border-bottom: 1px solid #222;
+      background: #0a0a0a;
+    }
+    tbody tr {
+      border-bottom: 1px solid #111;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #0f0f0f; }
+    tbody td { padding: 12px 16px; font-size: .85rem; }
+
+    .name-col { display: flex; flex-direction: column; gap: 2px; }
+    .name-col strong { font-weight: 500; }
+    .name-col small  { font-size: .7rem; color: #444; font-family: 'Courier New', monospace; }
+
+    .task-col { color: #555; font-size: .82rem; }
+
+    .status-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 500;
+      border: 1px solid #333;
+      color: #888;
+    }
+    .status-pill.active { border-color: #fff; color: #fff; }
+    .status-pill.busy   { border-color: #888; color: #aaa; }
+    .status-pill.error  { border-color: #555; color: #777; text-decoration: line-through; }
+
+    .calls-col { color: #444; font-size: .8rem; font-family: 'Courier New', monospace; }
+
+    .acts { display: flex; gap: 5px; }
+    .mini-btn {
+      background: #111;
+      border: 1px solid #222;
+      color: #555;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: .78rem;
+      padding: 4px 8px;
+      transition: all .12s;
+    }
+    .mini-btn:hover { border-color: #555; color: #fff; background: #1a1a1a; }
+
+    /* ── MODAL ── */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,.85);
+      align-items: center; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: #0d0d0d;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      padding: 26px;
+      width: 380px; max-width: calc(100vw - 24px);
+      animation: up .2s ease;
+      position: relative;
+    }
+    @keyframes up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .modal-x {
+      position: absolute; top: 14px; right: 14px;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      color: #555; border-radius: 50%;
+      width: 28px; height: 28px;
+      cursor: pointer; font-size: .9rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-x:hover { color: #fff; }
+    .modal h3 { font-size: .95rem; font-weight: 600; margin-bottom: 18px; }
+    .field { margin-bottom: 13px; }
+    .field label { font-size: .72rem; color: #555; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .07em; font-weight: 500; }
+    .field input, .field select {
+      width: 100%;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 7px;
+      padding: 9px 12px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      outline: none;
+    }
+    .field input:focus, .field select:focus { border-color: #555; }
+    .field select option { background: #111; }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+    /* ── TOAST ── */
+    #toasts { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 7px; }
+    .toast {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: .82rem;
+      color: #ccc;
+      max-width: 280px;
+      animation: up .2s ease;
+    }
+
+    @media(max-width:560px) {
+      .stats { grid-template-columns: repeat(2,1fr); }
+      thead th:nth-child(4), tbody td:nth-child(4) { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Zapier <span>Agent Hub</span></div>
+  <div class="live"><span class="dot"></span> <span id="hdrTxt">Connecting…</span></div>
+</header>
+
+<main>
+
+  <!-- Webhook -->
+  <div class="webhook-box">
+    <div class="label">Your External Link</div>
+    <h2>Give This to Zapier</h2>
+    <p>Copy the link below and paste it into any Zapier Zap as a Webhook (POST) action. Your agents will update automatically.</p>
+    <div class="url-row">
+      <div class="url-field" id="urlBox">Generating…</div>
+      <button class="btn btn-white" onclick="copyURL()">Copy Link</button>
+      <span class="copied" id="copiedTag">✓ Copied!</span>
+      <button class="btn btn-dark" onclick="newURL()" title="New URL">↺</button>
+    </div>
+    <div class="ping">Last ping: <span id="lastPing">—</span></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTotal">20</div><div class="l">Total</div></div>
+    <div class="stat"><div class="n" id="sActive">0</div><div class="l">Active</div></div>
+    <div class="stat"><div class="n" id="sBusy">0</div><div class="l">Busy</div></div>
+    <div class="stat"><div class="n" id="sIdle">20</div><div class="l">Idle</div></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input class="search" id="searchBox" type="text" placeholder="Search agents…" oninput="render()" />
+    <button class="btn btn-white" onclick="openAdd()">+ Add</button>
+    <button class="btn btn-dark"  onclick="sim()">⚡ Test</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Task</th>
+          <th>Status</th>
+          <th>Calls</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- Modal -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <h3 id="mTitle">Add Agent</h3>
+    <div class="field"><label>Name</label><input id="mName" type="text" placeholder="e.g. Email Bot" /></div>
+    <div class="field"><label>Task</label><input id="mTask" type="text" placeholder="e.g. Send daily report" /></div>
+    <div class="field">
+      <label>Status</label>
+      <select id="mStatus">
+        <option value="idle">Idle</option>
+        <option value="active">Active</option>
+        <option value="busy">Busy</option>
+        <option value="error">Error</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-dark" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-white" onclick="saveAgent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+const MAX = 20;
+let agents = [], uuid = '', url = '', editing = null, lastSeen = '';
+
+const NAMES = ['Email Bot','Slack Notifier','CRM Sync','Order Monitor','Invoice Sender',
+               'Lead Tracker','Social Poster','Report Builder','Calendar Bot','Support Triage',
+               'Data Backup','Stock Watcher','HR Assistant','Blog Publisher','Payment Alert',
+               'Feedback Bot','Task Reminder','News Digest','SEO Checker','Meeting Scheduler'];
+const TASKS = ['Send emails','Notify team','Sync contacts','Watch orders','Send invoices',
+               'Track leads','Post updates','Build reports','Manage calendar','Route tickets',
+               'Backup data','Monitor stock','Onboard staff','Publish articles','Alert payments',
+               'Collect reviews','Remind tasks','Curate news','Check SEO','Schedule meetings'];
+
+window.onload = async () => {
+  load();
+  if (!agents.length) seed();
+  await initWebhook();
+  render();
+  setInterval(poll, 5000);
+};
+
+function save() { localStorage.setItem('zah3_a', JSON.stringify(agents)); localStorage.setItem('zah3_u', uuid); }
+function load() {
+  try { agents = JSON.parse(localStorage.getItem('zah3_a') || '[]'); } catch(e){ agents=[]; }
+  uuid = localStorage.getItem('zah3_u') || '';
+}
+
+function seed() {
+  for (let i = 0; i < MAX; i++)
+    agents.push({ id:`ZAP-${String(i+1).padStart(2,'0')}`, name:NAMES[i], task:TASKS[i], status:'idle', calls:0 });
+  save();
+}
+
+async function initWebhook() {
+  if (uuid) { url=`https://webhook.site/${uuid}`; setBox(url); document.getElementById('hdrTxt').textContent='Live'; return; }
+  await createWebhook();
+}
+async function createWebhook() {
+  setBox('Generating your link…');
+  try {
+    const r = await fetch('https://webhook.site/token',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({default_status:200,default_content:'{"ok":true}',default_content_type:'application/json'})});
+    const d = await r.json();
+    uuid=d.uuid; url=`https://webhook.site/${uuid}`;
+    setBox(url); save();
+    document.getElementById('hdrTxt').textContent = 'Live';
+    toast('Your link is ready — copy and give it to Zapier.');
+  } catch(e) { setBox('No internet — refresh to try again.'); document.getElementById('hdrTxt').textContent='Offline'; }
+}
+function setBox(t){ document.getElementById('urlBox').textContent=t; }
+async function newURL(){ if(!confirm('Generate a new link? Old one stops working.')) return; uuid=''; await createWebhook(); }
+function copyURL(){
+  if(!url.startsWith('http')) return;
+  navigator.clipboard.writeText(url).catch(()=>{ const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t); });
+  const c=document.getElementById('copiedTag'); c.style.display='block';
+  setTimeout(()=>c.style.display='none',2000);
+}
+
+async function poll(){
+  if(!uuid) return;
+  try{
+    const r=await fetch(`https://webhook.site/token/${uuid}/requests?page=1&sorting=newest&per_page=5`);
+    const d=await r.json();
+    if(!d.data||!d.data.length||d.data[0].uuid===lastSeen) return;
+    lastSeen=d.data[0].uuid;
+    d.data.forEach(req=>{ let p={}; try{p=JSON.parse(req.content||'{}')}catch(e){} handlePayload(p); });
+    document.getElementById('lastPing').textContent=new Date().toLocaleTimeString();
+  }catch(e){}
+}
+function handlePayload(p){
+  let i=agents.findIndex(a=>p.name&&a.name.toLowerCase()===p.name.toLowerCase());
+  if(i<0) i=agents.findIndex(a=>a.status==='idle');
+  if(i<0){toast('All 20 slots are full!');return;}
+  const a=agents[i];
+  if(p.name) a.name=p.name;
+  if(p.task) a.task=p.task;
+  a.status=['idle','active','busy','error'].includes(p.status)?p.status:'active';
+  a.calls++;
+  save(); render();
+  toast(`"${a.name}" activated by Zapier.`);
+}
+
+function render(){
+  const q=document.getElementById('searchBox').value.toLowerCase();
+  const tb=document.getElementById('tbody');
+  tb.innerHTML='';
+  agents.forEach((a,i)=>{
+    if(q&&!a.name.toLowerCase().includes(q)&&!a.task.toLowerCase().includes(q)) return;
+    const tr=document.createElement('tr');
+    tr.onclick=e=>{ if(!e.target.closest('.mini-btn')) openEdit(i); };
+    tr.innerHTML=`
+      <td><div class="name-col"><strong>${esc(a.name)}</strong><small>${a.id}</small></div></td>
+      <td class="task-col">${esc(a.task)}</td>
+      <td><span class="status-pill ${a.status}">${a.status}</span></td>
+      <td class="calls-col">${a.calls}</td>
+      <td><div class="acts">
+        <button class="mini-btn" onclick="openEdit(${i})">Edit</button>
+        <button class="mini-btn" onclick="resetAgent(${i})">Reset</button>
+      </div></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('sTotal').textContent  = agents.length;
+  document.getElementById('sActive').textContent = agents.filter(a=>a.status==='active').length;
+  document.getElementById('sBusy').textContent   = agents.filter(a=>a.status==='busy').length;
+  document.getElementById('sIdle').textContent   = agents.filter(a=>a.status==='idle').length;
+}
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function sim(){
+  const ns=['Order Bot','Email Agent','Lead Bot','Slack Bot','Report Agent'];
+  const ts=['Process order','Reply to email','Qualify lead','Post update','Build report'];
+  const ss=['active','busy','active'];
+  const r=Math.floor(Math.random()*ns.length);
+  handlePayload({name:ns[r],task:ts[r],status:ss[Math.floor(Math.random()*ss.length)]});
+}
+function resetAgent(i){ agents[i].status='idle'; agents[i].calls=0; save(); render(); toast(`"${agents[i].name}" reset.`); }
+
+function openAdd(){ editing=null; document.getElementById('mTitle').textContent='Add Agent'; document.getElementById('mName').value=''; document.getElementById('mTask').value=''; document.getElementById('mStatus').value='idle'; document.getElementById('modal').classList.add('open'); }
+function openEdit(i){ editing=i; const a=agents[i]; document.getElementById('mTitle').textContent=`Edit — ${a.id}`; document.getElementById('mName').value=a.name; document.getElementById('mTask').value=a.task; document.getElementById('mStatus').value=a.status; document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function saveAgent(){
+  const name=document.getElementById('mName').value.trim();
+  const task=document.getElementById('mTask').value.trim();
+  const status=document.getElementById('mStatus').value;
+  if(!name){toast('Please enter a name.');return;}
+  if(editing!==null){ agents[editing].name=name; agents[editing].task=task; agents[editing].status=status; toast(`"${name}" updated.`); }
+  else { if(agents.length>=MAX){toast('Max 20 agents reached!');return;} agents.push({id:`ZAP-${String(agents.length+1).padStart(2,'0')}`,name,task,status,calls:0}); toast(`"${name}" added.`); }
+  save(); render(); closeModal();
+}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function toast(msg){
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},3000);
+}
+</script>
+</body>
+</html>
